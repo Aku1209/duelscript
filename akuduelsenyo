@@ -1,0 +1,43 @@
+local P = game:GetService("Players")
+local R = game:GetService("RunService")
+local L = P.LocalPlayer
+local B = script.Parent
+
+local on, conn = false, nil
+
+local function closest()
+	local c, d = nil, math.huge
+	local my = L.Character and L.Character:FindFirstChild("HumanoidRootPart")
+	if not my then return end
+	
+	for _,v in pairs(P:GetPlayers()) do
+		if v ~= L and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+			local dist = (my.Position - v.Character.HumanoidRootPart.Position).Magnitude
+			if dist < d then
+				d = dist
+				c = v
+			end
+		end
+	end
+	return c
+end
+
+B.MouseButton1Click:Connect(function()
+	on = not on
+	B.Text = on and "追跡中..." or "追跡 OFF"
+	
+	if on then
+		conn = R.RenderStepped:Connect(function()
+			local my = L.Character and L.Character:FindFirstChild("HumanoidRootPart")
+			local t = closest()
+			if my and t and t.Character then
+				local hrp = t.Character:FindFirstChild("HumanoidRootPart")
+				if hrp then
+					my.CFrame = CFrame.new(hrp.Position + Vector3.new(0,5,0), hrp.Position)
+				end
+			end
+		end)
+	else
+		if conn then conn:Disconnect() end
+	end
+end)
